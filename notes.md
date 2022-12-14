@@ -288,5 +288,281 @@ fn print_through(s: String) -> String {
     s
 }
 
-let finished = print_through(letters); /* letters have been moved into finished*/
+let finished = print_through(letters); /* letters have been moved into finished */
 ```
+## References
+
+- This is a way of pointing to a particular piece of data within memory.
+- By referencing existing data, we can re-use that data without needing to allocate additional memory.
+- References are found everywhere in Rust since memory is forcefully managed manually.
+
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+### & 
+
+- Every time we declare a value with *let*, we are creating data that is stored in memory.
+- We can then create a reference to that data by prefixing our expression with *&*.
+
+```rust
+
+let pi = 3.14159265359;
+let funny_number = &pi;
+
+println!("{funny_number}")
+
+```
+- We can also create references to references
+
+```rust
+
+let lightspeed = 299792458;
+
+let fast = &lightspeed;
+let still_fast = &&lightspeed;
+
+let speed_of_light = &still_fast; /*this is equivalent &&&lightspeed*/
+
+```
+
+## Dereference
+
+- When we need to access underlying data a reference points to directly, we can dereference with the * prefix.
+
+```rust
+
+let mut year = 3020;
+let y = &mut year;
+
+*y + 10;
+
+println!("The year is {year}");
+
+```
+## Automatic Dereferencing
+
+- Rust compiler will automatically dereference, specifically when the *.* operator is used.
+- to_uppercase() automatically does this on earth below
+
+```rust
+
+let planet = "Earth";
+let earth = &&&&planet;
+
+assert_eq!("EARTH", earth.to_uppercase());
+
+```
+
+## Ref
+
+- Permits access of an complex data structure's inner value by reference.
+
+```rust
+
+let starship: Option<String> = Some("Omaha".to_string());
+
+match starship {
+    Some(ref name) => println!("{}", name),
+    None => {}
+}
+
+/*without use of ref, nest line would not compile */
+
+println!("{:?}", starship);
+
+```
+- Ref can also be used with mutable data with Ref mut
+
+```rust
+
+let mut planet: Option<String> = Some("Waleco_8".to_string());
+
+match planet {
+    Some(ref mut name) => {
+        name.push('8');
+    }
+    None => {}
+}
+
+```
+- Ref technically accomplishes the same thing as & but is placed on the other side of the assignment.
+- THought of as reciprocals of each other.
+
+```rust
+
+let val = "reciprocal";
+
+let ref r1 = val;
+let r2 = &val;
+
+assert_eq!(r1, r2);
+
+```
+## Slices
+
+- a reference to a range of elements from a collection is called a slice
+- We use indexed expressions on a referenced collection to get a slice.
+
+```rust
+
+let s = String::from("Hello World");
+
+let hello = &s[0..5];
+let world = &s[6..11];
+
+println!("{hello}{world}");
+
+```
+
+## Variables
+
+- Is an identifier that points to a location in memory, which can either be data or function.
+
+### Variable Declarations
+
+- we use the *let* keyword with the *=* operator taking the form
+
+```rust
+
+let variable = "this is a &str";
+
+```
+
+- we can assign variables to any expression.
+
+```rust
+
+/* Closure */
+let double = |d| d * 2;
+
+/* This is the outcome of calling the closure */
+let var = double(10);
+
+/* Re-assign the value of the var */
+let doubled_var = var;
+
+```
+
+## Inferred Types
+
+- Rust compiler is good at inferring types based on context.
+
+```rust
+
+fn double(num: u128) -> u128 {
+    num * 2
+}
+
+let stars = 10; /*type of u128*/
+
+```
+- When primitive types have no context , rust will fall back to *i32* for untyped integer literals and *f64* for untypes floating point literals.
+
+```rust
+
+let integer = 20; /* type i32 */
+let float  = 2.1; /* type f64 */
+
+```
+
+## Type Signature
+
+- We can manually annotate types by providing a type signature, which are declared with *: Type* placed after var name and before =: operator.
+
+```rust
+
+let small_integer: u16 = 28;
+
+fn double(num: u128) -> u128 {
+    num * 2
+}
+
+let unsigned_int: u8 = 28;
+
+```
+## Shadowing
+
+- We can assign a new value to the same variable within the same scope without altering the original statement, this is called *Shadowing*
+
+```rust
+
+let favorite = "orange";
+println!("{favourite}");
+
+let favorite = "cerulan";
+println!("{favourite}");
+
+let favorite = "yellow";
+println!("{favourite}");
+
+```
+- Shadowing a variable will always allocate memory for the new variable.
+
+## Pattern Binding
+
+- let statements accept a pattern on the lhs of the = operator.
+
+```rust
+
+let (a, b) = (10, "pie");
+
+```
+- We can also create an array when declaring values for each member.
+
+```rust 
+
+let [noun, verb, adjective ] = [ "arrays", "are", "homogenous" ]
+
+```
+## Unused variables
+
+- Rust compiler will give us warnings when we have unused variables.
+- Prefix var names with *_* to escape check
+
+```rust
+
+fn no_warnings(){
+    let _used = "primal";
+    let _unused = "human"
+
+    println!("{_used}")
+}
+
+```
+
+## Mutability
+
+- Ability of a variable's value to be altered in memory.
+- In Rust, all variables are immutable by default.
+- Design is extremely useful in practice and helps avoid unitended behaviour.
+
+### Mut keyword
+
+- Once a variable is declared with let, its value cannot change.
+- We must declare its immutability with *mut* keyword.
+
+```rust
+
+/* Immutable */
+let three = 3;
+
+/* mutable */
+let mut king = "dead"
+
+```
+- Once declared as mutable, redeclare with *=*
+
+```rust
+
+let mut number = 20;
+
+/*explicit reassign */
+number = 80;
+
+```
+- Although mutable use cases exist for certain problems, it is advisable to avoid mutability in Rust.
