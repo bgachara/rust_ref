@@ -905,3 +905,256 @@ println!("{chair:#?}")
 ```
 - Debug is extremely useful trait for development purposes.
 - *PartialEq*, *Eq*, *Copy*, *Clone*
+
+## Available attributes
+
+- Remember since attributes are procedural macros, we are not limited to the ones provided by the language.
+- We can use procedural macros created by othersand even make our own.
+
+
+## Control Flow
+
+## If/else
+## else if
+
+```rust
+
+let is_daytime = true;
+
+if is_daytime {
+    println!("What a beautiful day")
+} else {
+    println!("Zzzzzzzzzz")
+}
+
+```
+## Exhaustiveness
+
+- conditional evaluations are fully exhaustive, so every possible outcome must be accounted for
+- This means that when a block is an expression, every other block must return the same type.
+
+## Conditional operators
+
+- used for conditional evaluations.
+
+### Equality 
+
+- can be checked with *==* and non-equality with *!=*
+- They will work on any operators that implement the *Eq* and *PartialEq* traits
+
+### Ordering
+
+- operators <, >, <=, >=
+- Work on any type that implements the *Ord* and *PartialOrd*
+
+## If/Let
+
+- allows us to compare against data within a complex type by destructuring a type and access its inner value with a concise syntax.
+- best exemplified and most commonly encountered when accessing the values of monadic types such as Option<T> and Result<T, E>
+
+### Declaring variables
+
+- since if/let is an expression, it can be used to conditionally declare a variable.
+
+### Destructuring other types.
+
+- *TO RE-READ AND MAKE NOTES*
+
+## Match
+
+- used to handle complex conditional matching in a concise and readable way.
+- takes in a pattern and compares it against any number of provided match arms.
+- if the body is a single statement or expression we must terminate with a ,.
+- match patterns are also exhaustive, meaning all possible patterns must be accounted for.
+
+```rust
+
+let chosen_number = 3;
+
+match chosen_number {
+    1 => println!("we have fouund them"),
+    2 => {
+        println!("dont worry");
+        println!("call for them we can");
+    }
+    3 => println!("This is it"),
+    _ => println!("do sth else"),
+}
+
+```
+- Match patterns are processed from top to bottom.
+
+### Match patterns
+
+- Or pattern **|**
+- Ranges **...**exclusive **..=** inclusive
+- Binding - we can bind our matched value to a variable to utilize it in a matched block with **@**
+- Match guards - perform additional conditional evaluations on each match arm.
+
+## Loops
+
+- allows us to control flow of code execution by repeating a block of code
+- behaviour can be boundless or bounded by a conditional evaluation
+
+### loop patterns
+
+- loop
+- break, continue
+- while
+- while let
+- for/in  
+
+### Loop labels
+
+- allows us to tag our loops with labels utilizing syntax `label: loop {}
+
+## Functions
+
+- data + instructions for manipulating it = computer program.
+
+### Function declarations
+
+- declare using *fn* keyword, name of fn, arguments and body
+
+```rust
+
+fn main() {
+    println!("Howdy");
+}
+
+say_howdy();
+```
+- Function bodies have their own scope and cannot access variables from the local enviroments
+
+```rust
+let location = "Kangemi!";
+
+fn print_de_ting(){
+/* this will not compile */
+    println!("{location}")
+
+let new_location = "Kawangware";
+    println!("{new_location}");
+
+}
+
+- Closures are a kind of lazy function that allow access variables from the local environment.
+
+```
+### Return values
+
+- we can specify value with -> operator followed by returned type.
+
+```rust
+
+fn another_fun () -> i32 {
+    27
+
+/*assign returned value to a new variable*/
+
+let integer = another_fun();
+
+println!("{integer}")
+}
+
+```
+### Parameters
+
+- Functions take in data to operate on, input parameters and in Rust always require type signature.
+- declared with parameter name, followed by a : and type 
+
+```rust
+
+fn multiply(number_1: u32, number_2: u32) -> u32 {
+    number_1 * number_2
+}
+
+```
+- Variadic functions available via macros.
+
+### Functions as parameters
+
+- can pass functions as parameters with the *fn* pointer primitive
+- type signature takes the form fn(T) -> T
+
+```rust
+
+fn increment(number: u32) -> u32 {
+    number + 1;
+}
+
+fn roudabout( top: fn(number: u32) -> u32, new: u32 ) -> u32 {
+    top(new)
+}
+
+let inc = roundabout(increment, 9)
+```
+- Forgo the trailing () when passing it as argument
+
+## Closures
+
+- Anonymous functions that can capture the state of the environment.
+- Entre' of functional programming in Rust.
+- Closures are called lazily which can help provide significant performance benefits under some conditions.
+
+### Closure syntax
+
+- same as functions but input parameters placed between | |.
+
+```rust
+/* function */
+fn square_fun(num: u32, num2: u32 ) -> u32 { num * num2 };
+
+/* closure */
+/* verbose */
+fn square_clo | num: u32, num2: u32 | -> u32 { num * num2 };
+
+```
+- Rust has ability to infer parameter and return types, and also no need { }
+
+```rust
+/* single argument */
+let square = |a| a*a;
+
+/* multiple arguments */
+let square = |a, b| a * b;
+
+/* no arguments */
+let nil = || 9 * 10;
+```
+- When we store a closure as a variable, we can call it the same we would a function.
+
+### Capturing Enviroment
+
+- Closures differ form functions in that they capture values from the scope they are defined in.
+
+```rust
+let house_number = 388;
+let print_number = || println!("{house_number}");
+
+print_number();
+```
+- when we take values from the enviroment we take them by reference.
+
+### Ownership and move
+
+- move keyword tells closure to take ownership of local data it utilises.
+
+```rust
+let answer = 98;
+
+let print_ans = move |x| x === answer; 
+
+println!("{}", print_ans(100));
+
+```
+### Closure as Ds
+
+- like functions can also be used as fields in structs or tuples.
+
+### Laziness 
+
+- Closures are not computed until they are called.
+- For function that takes long to be computed, better performance by rewriting as a closure.
+
+## Function Iteration
