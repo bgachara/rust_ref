@@ -566,3 +566,342 @@ number = 80;
 
 ```
 - Although mutable use cases exist for certain problems, it is advisable to avoid mutability in Rust.
+- To change a variable's value without mutation, we can choose *shadowing* a variable instead.
+
+```rust
+
+let number = 10;
+let number = number + 10;
+
+println!("{num}"); /*prints 20*/
+
+```
+- This allows us to avoid the complexity of mutability but at the cost of extra memory allocation.
+
+## Mutable References
+
+- It is possible to mutate values by reference with &mut.
+
+```rust
+
+fn question(s: &mut String) {
+    s.pop();
+    s.push('?');
+}
+
+let mut sentence = String::from("I am");
+question(&mut sentence);
+
+println!("{sentence}");
+
+```
+- We can only have one mutable reference to a piece of data at a time.
+- This means we cannot immutably borrow a mutable reference outside the lifetime of the mutable reference.
+
+## Interior Mutability
+
+- For more complex data types, we can only declare mutability on the entire type, either mutable or immutable.
+
+```rust
+
+struct Coordinate{
+    x: i32,
+    y: i32,
+}
+
+let mut coord = Coordinate { x: 20, y: 20};
+
+/*we cannot mutate the fields because coord is mutable*/
+coord.x = 32;
+coord.y = 40;
+
+```
+- Types exist to allow for interior mutability on the Rust std library, be warned though that these types can circumvent compile-time guarantees and generate run-time errors when not properly used.
+
+## Constants
+
+- Constats are immutable data or functions that are declared at compile time, preferred when piece of data is used in many places viaout the codebase and want to avoid code duplication and ease development.
+- *const* keyword used and SCREAMING_SNAKE_CASE convention.
+
+- Constants require a type declaration and only types with a known size at compile time can be declared a constant
+
+```rust
+
+const ANIMAL: &str = "penguin";
+
+/*String does not have a known size, so not used as constant*/
+/*Below code will not compile*/
+/*const OOPS: String = String::from('sorry'); */
+
+```
+- Constant can be assigned to any expression as long as that expression can be computed at compile time.
+
+```rust
+
+const SECONDS_IN_A_DAY: usize = 60 * 60 * 24;
+```
+- Constants follow the same visibility requirements as any other expression.
+
+## Const fn
+
+- In Rust, function pointer are a primitive data type, means we can declare functions as constants.
+- Making a function constant will enforce restrictions to validate that the function will provide the same result when evaluated both at compile-time and runtime.
+- Same concept as a mathemtically pure function and helps prevent unintended side effects.
+- const fn parameters are limited to datatypes with a known size at compile-time.
+
+```rust
+const fn days_to_seconds(days: usize) -> usize {
+    days *60 * 60 * 24
+}
+ 
+// We can utilize constant functions within other constant declarations
+const WEEK_IN_SECONDS: usize = days_to_seconds(7);
+ 
+let february_in_seconds = days_to_seconds(28);
+ 
+println!("{WEEK_IN_SECONDS}");
+println!("{february_in_seconds}");
+
+```
+
+## Associated constants
+
+- Constants declared within traits.
+
+```rust
+
+trait Golf {
+    const BIRDIE: i32 = -1;
+}
+ 
+struct Caddy;
+ 
+impl Golf for Caddy {}
+ 
+println!("{}", Caddy::BIRDIE);
+
+```
+
+## Modules 
+
+- Separation of codebase into distinct sections helps.
+- Rust has a module system that provides user-defined namespacing within our codebase.
+
+### mod
+
+- We use the mod keyword to define a module.
+- A module has its own distinct scope and visibility.
+
+```rust
+
+mod cake {
+    pub fn is_favorite(name: &str) -> bool {
+    name == "Coconut"
+    }
+}
+
+```
+
+- Once declared its content can be accessed by utilising path syntax
+- A path is created by chaining any number of nested modules together with the :: operator.
+
+```rust
+
+let guess = cake::is_favorite("Marble");
+
+```
+- Utilising paths intentionally in our code increases readability.
+
+## Nesting modules
+
+- Modules can be nested indefinitely.
+
+```rust
+mod cake {
+  pub mod flavors {
+    pub const COCONUT: &str = "Coconut";
+ 
+    pub mod toppings {
+      pub const SPRINKLES: &str = "Sprinkles";
+    }
+  }
+}
+ 
+println!("{}", cake::flavors::COCONUT);
+println!("{}", cake::flavors::toppings::SPRINKLES);
+
+```
+
+## Importing Items
+
+- With the *use* keyword we can import any module or contained item into the current scope, followed by the path to the item we wish to import.
+- Items to be imported must be desclared public *pub*, all items are private by default.
+
+```rust
+
+mod cake {
+  pub mod flavors {
+   pub const COCONUT: &str = "Coconut";
+}
+}
+ 
+/* A module must be `pub` to access it by name.*/
+use cake::flavors;
+ 
+println!("{}", flavors::COCONUT);
+
+```
+## Exporting Items
+
+- When the crate is a library, making an item public with pub will expose that item to users of our library.
+- Rust allows us to limit where an item is accessible from when we make it public.
+- If we have a function we want to make public internally within the crate and not to users out of it we can use *pub(crate)*
+
+```rust
+
+pub(crate) fn print_lemon() -> {
+    println!("Lemon");
+}
+
+```
+- Other designations include the parent module, *pub(super)* or we can designate a specific module with the *in* keyword, *pub(in path::to::module)*
+
+## Separate files
+
+- When we add files to our src folder,we can treat those file's content as modules to be imported.
+- i.e add mod filename to define the file as a module.
+- When using separate files, we can nest our files within folders that have the same name as the module.
+- mod.rs inside a folder can take the place of a named file.
+
+### crate, super, self
+
+- For access of module that are not direct children of current module
+    - crate - access modules from root of our project.
+    - super - access relative parent module.
+    - self - access current module.
+
+## External crates
+
+- after adding as dependency to cargo.toml, import by name.
+
+### Renaming Imports
+
+- using the *as* keyword.
+- avoid naming conflicts and make code readable.
+
+## Macros
+
+- Rust's macro system is a way of manipulating and generating source code 
+- Allow for things not possible in the normal language structure or require large amount of code repetition.
+
+### What are they
+
+- Procedures that expand and generate raw source code before the *rustc* compiler begins its compilation step.
+- We can spot macros in a Rust program in two different places
+
+```rust
+/* Attributes are macros */
+#[derive(Debug)]
+struct Wow;
+
+let wow = Wow;
+
+/* calls ending with ! are macros */
+println!("{wow:?} that is convenient!")
+
+```
+- #[derive()] will generate all the source code necessary for Wow to be able to print debug out.
+- println! macro allows us to format and print a string with a convenient interpolation syntax.
+- Macros are a core part of Rust and are powerful for creating intuitive programmer interfaces for your library.
+
+## Function like Macros
+
+- They look like normal functions whose name ends with a !.
+- Unlike functions, input of the body of a macro call is arbitrary.
+- We can denote the body of a macro with (), [], {}.
+
+### std Library Macros
+
+- *format!()* - interpolate and format strings.
+- *println!()* - internally call and format when printing to stdout.
+- *assert!()* - assert a conditional evaluation or panic upon failure.
+- *unreachable!()*, *unimplemented!()* - panicking macros.
+
+## Attributes
+
+- Macros that allow for special things such as set compilation options, conditionally compile pieces of code, ignore lints and denote tests and benchmarks.
+- Can be declared inside the scope of item it is being applied to, *inner attribute*, or before item being applied *outer attribute*
+
+### Inner attributes
+
+- declared with *#![attribute]* placed as first item declared in its scope.
+- can be used in external blocks, functions, implementationsand modules
+
+```rust
+
+/* Inner attributes must be declared before any other items */
+/* below code foregos all the compiler warnings */
+#![allow(warnings)]
+
+fn main() {
+    let unused_variables = "no compiler warnings here.";
+}
+
+```
+- If applied at the top of a module file then it will only apply to that module and its children.
+
+### Outer attributes
+
+- declare by placing #[attribute] before the item we would like applied to.
+
+```rust
+
+/*defining a test */
+#[test] 
+    pub fn is_true() {
+        assert!(true, "successful test")
+    }
+
+```
+## Attribute syntax
+
+- Common input patterns
+
+```rust
+
+/* named */
+#[no_Std]
+
+/* named with value */
+#[must_use = "This function should be used"]
+
+/* named with list of identifiers or paths */
+#[forbid(unsafe, warnings)]
+
+/*named with list of keys and values */
+#[cfg_atr(target_os = "linux", path = "os/linux.rs")]
+```
+
+## Derive
+
+- defined #[derive(Trait)]
+- allows us to automatically implement a trait for a type.
+
+```rust
+#[Derive(Debug, Clone)]
+
+struct Chair {
+    legs: u32,
+    wooden: bool,
+}
+
+let chair = Chair {
+    legs: 4,
+    wooden: true,
+}
+
+/*we can print the debug output of our Chair type*/
+println!("{chair:#?}")
+```
+- Debug is extremely useful trait for development purposes.
+- *PartialEq*, *Eq*, *Copy*, *Clone*
