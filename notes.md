@@ -1158,3 +1158,478 @@ println!("{}", print_ans(100));
 - For function that takes long to be computed, better performance by rewriting as a closure.
 
 ## Function Iteration
+
+- When functions take function as parameters, closures allow us to write very succint code in a functional style.
+
+### Iteration
+
+- any type that implements the Iterator trait gives us a plethora of methods that allow us to operate on collections without having to use a *for* loop.
+- we can create an iterator with the iter() method and then proceed through the collection with next()
+
+```rust
+
+let numbers = [1, 2, 3];
+let mut numbers = numbers.iter();
+
+if let Some(first) = numbers.next() {
+    println!("{first}");
+}
+
+if let Some(second) = numbers.next() {
+    println!("{second}");
+}
+```
+- Rust also provides us with the into_iter() method for taking ownership of the items of a collection and iter_mut() for accessing a mutable reference to each item.
+- Check the other methods that the Iterator trait provides.
+
+### Collect 
+
+- transform an iterator back into a collection.
+- Type annotations required for the returned type if they cannot be infered.
+
+```rust 
+
+let mut numbers = [10, 20, 30].iter();
+numbers.next();
+number.next();
+
+let remaining_number: Vec<&u32> = numbers.collect(); /* [30] */
+/* iterators are consuming the above remaining_numbers is a Vec with a single value 30*/
+```
+
+### Map
+
+- Takes in a closure that will operate on each value of the collection.
+
+```rust
+
+let numbers = [10, 20, 30];
+
+let nums: Vec<i32> = numbers.iter()
+    .map(|a| a * 2)
+    .collect();
+println!("{nums:?}"); /* [20, 40, 60 ]*/
+
+```
+
+### Filter
+
+- Return values that satisfy a provided boolean conditional
+
+### Enumerate
+
+- Allows us to access the indexes of a collection while iterating.
+
+### Laziness
+
+- Iterators in rust are lazy, evaluated until they are needed.
+- When we want an operation that only has a side effect, use a for loop to ensure it is run.
+
+```rust
+
+let numbers = [10, 20, 30];
+
+/* This will compile but not print the numbers */
+numbers.iter()
+    .map(|r| println!("map: {r}"));
+
+/* This will print all the values of our collection */
+for n in numbers {
+    println!("for: {n}")
+}
+```
+## Primitives
+
+- Everything in Rust has a type.
+- Primitives are types baked into the language itself and not in the std library.
+
+### Boolean
+
+### Integers
+
+- Rust has multiple signed and unsigned integer primitives.
+- They are designated by their memory size in bits and whether or not they allow negative numbers.
+- *i* signed integers and allow negative numbers, while unsigned integers begin with *u*.
+- i.e *u8* is an integer that represents form 0 to 255.
+- *isize* = *i8*,*i16*,*i32*,*i64*, *i128* / *usize* = *u8*
+- When no type is provided, i32 is infered.
+
+### Floating points
+
+- Two main types with differing precision. f32, f64.
+- Denoted by the bit size in memory.
+
+```rust
+
+let integer = 102;
+let negative = -42;
+let float = 1.23;
+
+/* annotate types */
+
+let byte: u8 = 255;
+let large: i64 = -98765677889;
+let annotate_float: f32 = 2.3;
+
+/* also postfix the type to the number*/
+
+let new_postfix = 89u16;
+let large = -9787654i64
+```
+## Chars
+
+- This is unicode scalar value.
+- Defined by specifying the character within single quote characters.
+
+## Arrays and Vec
+
+- used to create collections of data of the same type.
+- Array: used when the collection has fixed length.
+- Vec: used when the collection needs to grow and shrink in size.
+- For data that is of different types use a struct or tuple.
+
+- Due to their fixed size, arrays are very efficient at runtime.
+- We can initializethe values of an array from an expression rather than manually defining each value,
+```rust 
+
+let integers = [10, 20, 30];
+
+/* define a large array of e*/
+
+let many_e = ['e'; 20];
+```
+
+## Accessing values
+
+- We can access values via the index expression syntax, can be a single value or a range by index.
+- single value: collection[2]
+- we can also utilize any expression that evaluate to type usize.
+
+```rust
+fn one() -> usize { 1 }
+
+let letter_b = array[one()];
+```
+- Ranges: supply a beginning and ending index separated by ...
+- Range syntax is inclusive at the beginning and exclusive at the end.
+
+```rust
+
+let names = ["pluto", "jupiter", "earth", "neptune"];
+let sub_names = &names[1...3]; /* [ jupiter, earth*/
+println!("{name:?}");
+
+```
+## Looping /Iteration
+
+- operate on any collection with for loops and iterators.
+
+```rust
+let array_of_chars = [1, 2, 3];
+
+/* looping */
+for c in array_of_chars {
+    printl!("{c}");
+}
+
+/* function iteration */
+array_of_chars.iter().map(|c| println!("{c}"));
+```
+
+## Vec
+
+- Dynamically sized collection. Vec<T>
+- Stores data in heap which allows it to grow or shrink in size.
+- we can create new Vec using new() and from() but there also exists a vec![] macro
+
+```rust
+/* initialize a new, empty vec */
+let new_vec: Vec<char> = vec![];
+
+/* initilaize with values*/
+let new_vec: Vec<char> = vec![1, 2, 3];
+
+/* equivalent with keyword */
+let mut new_vec = Vec::new();
+
+```
+- Like arrays, we also use index syntax expressions to access values.
+- Unlike an array, access of out of bounds will compile and panic at runtime.
+- use methods get() and first().
+
+## &str and String
+
+- &str is an immutable reference to data in memory, while a String is a collection that allows composition and mutation.
+- &str data is stored on the stack, making them computationally efficient.
+
+```rust
+
+let immutable: String = "This is the way";
+
+/* immutable */
+let value: &str = "And that is it";
+
+/* annotated string with an explicit lifetime */
+let explicit: &'static str = "I am not even close";
+
+```
+- Since &str is immutable, we cannot do anything else other than validate them and access their data.
+- When we don't know the size of string or plan on manipulating the data, use String.
+
+## String
+
+- This is stored on the heap and hence allow us to mutate value at will.
+- While heap is not as fast as the stack,it allows rust to automatically resize the allocated memory at when needed at runtime.
+
+```rust
+
+let empty_string = String::new();
+let value_string = String::from("Not Sure");
+```
+- String is implemented as a Vec<u8>, allowing us to utilize iterators and other methods accessible on Vec<T>.
+- Dynamically sized data types don't implement the Copy trait because data is stored on a heap. Better to use Clone 
+
+### Conversion 
+
+- &str to String - use the String::from() or to_string() 
+- String to &str - we have to only reference the value.
+
+```rust
+/* reference the value */
+let privy = String::From('Papaya');
+
+permit(&privy)
+
+```
+## Tuples
+
+- To create compound types with differing contained types.
+- Declare by placing data within parenthesis ()
+
+```rust
+
+let number = ('p', 38, "this is a trial");
+/*access using dot notation*/
+
+let char = number.0;
+let number = number.1;
+let string = number.2;
+
+```
+- Access fields of a tuple using dot notation. 
+- We can also destructure a tuple anywhere the Rust syntax allows it.
+
+### Tuple struct
+
+- if we want to reuse a tuple across the codebase, we can define it as it's own custom type.
+- This is referred to as a Named Tuple or a Tuple Struct using the struct keyword.
+
+```rust 
+/* tuple struct declarations must end with */
+pub struct imdb = (&'static str, bool, f64);
+
+/* type signatures are much shorter */
+fn get_cat() -> Cat {
+    println!()
+}
+```
+- Advantage of naming our tuple is that we can create methods specific to this type utilizing an impl block.
+
+## () Unit Type
+
+- A tuple that does not contain any field() is its own primitive type in Rust.
+- we can think of it as a piece of data without any actual data, its value is its own existence.
+- Provide a safe way to handle certain situations while avoiding the pitfalls of a "null" type.
+
+- A function which does not return a value actually returns a ().
+- Unit Struct: we can also give names to our own custom unit types.
+
+## Structs
+
+- Much like tuples, used to group items of different types, main difference is that here you can give names for each field.
+- declare using the struct keyword...with fields provided within its declaration block.
+- names should be snake_case and type annotated
+
+```rust
+
+struct Persona {
+    name: String,
+    age: u8,
+    location: String,
+}
+
+```
+
+### Instantiating 
+
+- All field options must have values otherwise code will not compile.
+- We can also instantiate from variables where if names are the same we can use the shorthand notation.
+
+### Accessing values
+
+- Use the same dot notation with the desired field name.
+- Having the fields accessed via names provides more clarity within the codebase.
+- Multiple values can also be accessed using the ...var operator.
+
+```rust
+let guest_1 = Guest {
+    name: "Wanjohi",
+    age: 90,
+    location: "Nakuru",
+};
+
+let guest_2 = Guest {
+    name: "Grace",
+    ...guest_1
+};
+
+println!("{} == {}", guest1.rsvp, guest2.rsvp);
+
+```
+- We can also use a function to populate the remaining fields as long as the funtions resolves to the same type for each remaining field.
+- This is common on structs that implement the Default trait.
+- We can also match on structs like we do on other datatypes.
+- We may not want to match on all fields, only a subset hence the use of  _ for the value of a single field and ... for all remaining fields.
+
+### impl Blocks
+
+- they are powerful tools in Rust because when we create a struct we are defining our own custom data type.
+- declaring a type allows us to make an impl block to create specialised functions that are specific to that type.
+- Functions declared within an impl block are called methods.
+
+## Enums
+
+- ability to have a datatype whose value can only be one of a particular set of variants.
+- declared using the enum keyword.
+- follow the PascalCase naming convention.
+
+```rust
+
+enum InnerPlanets {
+    Mercury,
+    Venus,
+    Earth,
+    Mars,
+}
+
+/* use :: to create a value*/
+let home = InnerPlanets::Earth;
+```
+- Since enums can only be of a particular value, matching on an enum is a very common and useful pattern.
+- When matching on an enum all variants must be handled otherwise code will not compile.
+- One can use the _ operator to handle the remaining unspecified variants.
+
+```rust
+
+let vacation_location = InnerPlanet::Mercury;
+ 
+match vacation_location {
+  InnerPlanet::Mercury => println!("Bring sun protection."),
+  InnerPlanet::Venus => println!("Quite blue."),
+  _ => {
+    println!("Brrr...");
+    println!("Bring a coat!");
+  }
+}
+```
+
+## Variant values
+
+- Enum variants can also contain values.
+- This is possible because enum variants are actually structs in Rust.
+
+```rust
+
+enum Meal {
+    Pasta,
+    StriFry(Vec<String>),
+    Burrito {
+        beans: bool,
+        rice: bool,
+    },
+}
+```
+- We can access a variant's inner data via destructuring.
+
+```rust
+let dinner = Meal::Burrito {
+    beans: true,
+    rice: false,
+}
+
+```
+
+- Like structs, enums are our own custom data type.
+- We can provide methods for our enums through an impl block.
+
+## Monads and Option
+
+- They circumvent the decades old problem of Null type.
+
+### Option
+
+- is a two variant enum with generic types on at least one of the variants
+- The Option<T> is an enum with two variants Some(T) and None
+
+```rust
+
+pub enum Option<T> {
+    Some<T>,
+    None,
+}
+
+let some_str = Some("has a value");
+let no_str = None;
+
+```
+- Since it only has two variants and we can pass along its Some(T) variant, it somehow acts as a boolean expression that is capable of passing a value with it.
+- Useful for situations where the result is unknown, can either be there or missing i.e database request.
+- use the unwrap() method to access data of a monadic result. Data for Some() and panic for None.
+
+## Result monad
+
+- Result<T, E> is also another monadic type.
+- clever way of handling the propagation of errors in a sensible way using characteristics of monads.
+- It is an enum of two variants: Ok<T> denotes success and Err<E> denotes error.
+
+```rust
+ enum Result<T, E> {
+    Ok<T>,
+    Err<E>
+ }
+
+ let succes = Ok("good job");
+ let error = Err("what has hassed");
+
+
+fn crib(number:i32) -> Result<bool, String>
+{ if number < 0 {
+    Err("This is an error from result")
+} else if number > 5 {
+    Ok(true)
+} else {
+    Ok(false)
+}
+}
+
+```
+- Thanks to the capacity of monadsto pass generic data on both variant arms, we can both pass a successful boolean result and treat the overall successful operation  of the function as its own boolean result. At the same time able to provide context to our errors.
+
+### Error propagation
+
+- as with Option<>, we use unwrap() to access values
+- we can utilize if with is_ok() and is_err() methods.
+- unwrap discouraged because of program panic, use if let for safer erro patterns.
+
+### ? operator
+
+- Being able to propagate errors without a lot of syntax is crucial when keeping code clean. more time to focus on the good side of code.
+- ? operator used to achieve this exactly.
+- When we have a function that returns a Result, any expression within its body that also returns a Result can be appended with ? to force any Err result to be returned immediately.
+
+### Custom Erro Types
+
+- While we can utilize any type for defining error context, enums are a great canditate for errors.
+- To allow other errors types to be carried into their own ? operator, we must implement From<T> for the desired type.
+
+## Lifetimes
