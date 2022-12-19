@@ -1633,3 +1633,279 @@ fn crib(number:i32) -> Result<bool, String>
 - To allow other errors types to be carried into their own ? operator, we must implement From<T> for the desired type.
 
 ## Lifetimes
+
+- Introduced to help handle how long particular references lives before it is dropped from memory.
+
+### Borrow checker
+
+- rustc has a built-in system that looks at scopes of references and checks to make sure that no references are dropped before we try and use them.
+
+```rust
+/* we declare an empty variable */
+let a;
+{
+    let b = true; /* we create a var b with value true.*/
+    a = &b; /* assign a value to be reference b*/
+} /* value of b is dropped because it is out of scope */
+
+/* we can no longer access a because the value it is referencing no longer exists */
+/* println!("{}", a)*/
+```
+- Rust compiler uses `lifetime ellision rules` to determine lifetimes of variables hence no need to always explicitly declare them.
+
+### Annotating lifetimes
+
+- append the & with a *'label* to annotate a lifetime on a reference.
+- Lifetimes are generic in nature and usually denoted with simple names such as a' and b'.
+
+```rust
+
+let live: &'a str = "This will annotate the lifetime of '`a'.";
+
+```
+- When we create a data structure with lifetimes, we must annotate the lifetime on the field as well as on our new type directly.
+- LA for custom types occur between <> placed after the name of our data structure.
+- Functions also annotated the same way.
+
+```rust
+struct Outfielder<'a> {
+    name: &'a str,
+}
+
+/* we can declare multiple lifetimes by separating them with commas */
+
+struct Batter<'a, 'b> {
+    name: &'a str,
+    stance: &'b str,
+}
+
+fn pass_to<'a>(name: &'a str) -> String {
+    format!("passing the ball to {name}")
+}
+```
+- When we declare an impl block for a type that utilises lifetimes, we must also annotate it directly but they are inherently passed to all contained methods.
+- *`static* annotation defines a lifetime as being capable of living for the duration of our program. I.e declaring constants.
+
+```rust
+
+let NEW_CONST: &'static str = "This gotta stick";
+```
+- can solve alot of lifetime issues by declaring them as 'static
+- Generics and lifetimes annotaions are located in the same place, when we have both generics and la for the same item we declare lifetimes first.
+
+## Type Aliasing
+
+- Well-named code is sometimes the best form of documentation.
+- In the cases where we feel the need for a custom type but find an already existing type that can fulfill our requirements we can type alias it.
+- use keyword type.
+
+```rust
+
+/* Name resolves to String */
+
+type Name = String;
+
+/* use it */
+struct Person(Name);
+
+fn print_name(person: Name) {
+    let name = person.0;
+    println!("{}", name);
+}
+```
+
+- Importing aliasing: use the `as` keyword to provide alternate names for imports.
+
+## Traits
+
+- Used to define shared behaviour between different types.
+- Defines all the methods that a trait must implement to be considered a member of that trait.
+
+### Define shared behavior
+
+- 
+
+```rust
+
+trait Harmonize {
+    /* if we omit the body we must define on implementation */
+    fn sound(&self) -> String;
+    /* if we provide one, acts as a defualt that can be overwritten*/
+    fn listen(&mut self) {
+        std::thread::sleep_ms(27700);
+    }
+}
+
+```
+### Implementation Traits
+
+- syntax: impl Trait for Type {}
+- trait signatures for trait methods must match the trait's definition.
+
+```rust
+struct Human(String);
+
+impl Harmonize for Human {
+    fn sound(&self) -> String{
+        self.0.clone()
+    }
+
+    /* already implemented listen*/
+}
+
+```
+- Traits are most useful when applied to multiple types
+- Trait methods are always public
+- We cannot implement a trait  from an external crate on a type from an external crate, must make an intermediary type to connect them.
+
+### Generics
+
+- Since traits are methods that must be fulfilled, we can use traits  with generics to create meaningful type signatures.
+
+### Deriving Traits
+
+- provides a way to implement certain types without having to declare an impl block.
+- This is called deriving a trait and is accomplished by placing the #[derive(Trait)] before our data structure.
+
+```rust 
+#[derive(Debug)]
+struct Passerine {
+    freq: Vec<u64>,
+}
+
+let bird = Passerine {
+    freq: vec![827, 23, 12, 189],
+};
+
+/* Now it is possible to print the debug out for Passerine type */
+println!("{bird:?}")
+```
+### Scope
+
+- In order to utilize the methods of a trait, that trait must be in scope.
+
+## Generics
+
+- Rust being a strog-types language, we must provide single type signatures for data structures and function parameters.
+- This helps the compiler figure out how to manage its memory safely, can however be limiting to a programmer.
+- Generic types can work across multiple types.
+
+### When to use
+
+- Imagine working on the velocity of an object, might be measured either in integer or float point numbers.
+- Building separate data structures would mean code duplication.
+- Generics help avoid this code repetition by combining them into a single datatype using the generic type T.
+
+```rust
+
+struct Velocity<T>(T);
+
+let velocity_int = Velocity(5);
+let velocity_float = Velocity(3.8);
+
+```
+- data types such as Option<T> and Vec<T>.
+
+## Declaring Generics
+
+- we can utilize generics as fields on custom data types and as function parameters.
+- Since generics are situational, any item utilizing  generics must provide a signature declaring the generic types it uses.
+- We annotate genrics the same as lifetimes.
+- Signature is declared within <> following the item we are annotating.
+- Generic types are conventionally named with single uppercase letters such as T.
+
+```rust
+/* Here the 'Wrapper' struct utilizes a single generic type T */
+
+struct Wrapper<T> {
+    data: T,
+}
+
+/* if multiple separate them with commas */
+enum Present<T, U> {
+    Food(T),
+    Card(U),
+}
+
+/* in functions, generics are declared after the name and before the parameters */
+fn wrap_data<T>(data: T) -> Wrapper<T> {
+    Wrapper {
+        data,
+    }
+}
+```
+- When declaring generics on impl blocks, the generic type is made available to the entire block, means we forgo declaring generics on contained methods.
+
+```rust
+
+impl<T> Wrapper<T> {
+    fn get_data(self) -> T {
+        self.data
+    }
+}
+```
+### Trait bounds
+
+- Trait requirements on generic types are called Trait Bounds.
+- We can require multiple constraints on the same generic type.
+
+### impl Trait
+
+- used for function parameters and return values, allows us to utilize generics without having to manually declare them.
+
+### where 
+
+- useful when applying many constraints to generics 
+
+### Turbofish generics
+<!-- REVISIT FROM HERE -->
+
+## Declarative Macros
+
+- Most straightforward way of creating own macros is with macro_rules!
+- Macros with this special macro are known as declarative macros and are a quick way for us to start manipulating our code.
+
+### macro_rules!
+
+- D-macros allow us to take syntactic frags of Rust language as input and then return raw source code.
+- They allow arbitrary repetition of code.
+
+```rust
+
+macro_rules! make_it {
+    () => {
+        /* everything here will be generated in source code when the macro is called */
+    }
+}
+
+/* parameters are referred to as metavariables and respective types are fragment-specifiers */
+/* declare them the same manner as function parameters, must start with $ and no spaces between the metavariable, its fragment specifier and : */
+/* fragment specifiers include expr, ident, stmt, ty, literals, */
+```
+### exporting macros
+
+- #[macro_export] attribute used.
+- visible to other crates when imported as a dependency.
+- alternatively use #[macro_use] to export all macros within a module.
+
+## Procedural Macros
+
+- More feature-complete approach to creating macros than a d-macros
+- Appear in more places in the language and generate lots of code with minimal input.
+
+### Kinds of P-macros
+
+- Function-like macros: function_like!()
+- Attribute macros: #[attribute]
+- Custom derive macros: #[derive()]
+
+- P-macros are required to be in their own crate and utilize a different approach to parsing input than declarative macros.
+## No Garbage Collection / Runtimes
+
+- No garbage collection pauses.
+- No memory overhead( except what you add ).
+- Can issue system calls( fork/exec ).
+- Can run on systems without an OS.
+- Free FFI calls to other languages.
+
+### Built-in dependency management.
