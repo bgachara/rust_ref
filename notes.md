@@ -12,13 +12,91 @@
 ## Rust Toolchain
 
 - **rustc** - is the rust compiler.
-- **rustup** - manages rust version.
-- **cargo** - main tool during development.
+- **rustup** 
+    - manages rust version, installs compiler, cargo, std lib and other core tools.
+    - determines toolcahin depending on the host platform.
+    - It is a tool multiplexer as it installs and manages toolchains.
 
+- **cargo** 
+    - official build and dependency management tool during development.
+    - i.e compiles code, download and compile dependent libraries, linking libraries and building development and release binaries.
+    - Also performs incremental builds of code to reduce compilation time as programs evolve.
+    - Also guides idiomatic project structure.
+    - Manage external dependencies, Debugging, Testing, Generate documentation and release management.
+
+- Release channels: nightly, beta and stable channel.
 - With Cargo, projects are called packages and can consist of one or more **crates**.
+
+- Two basic projects in Rust: 
+    - Libraries(lib crate)
+        - self contained code intended for use by other programs.
+        - can be published to a public package repository such as crates.io.
+        - program execution begins in the src/lib.rs.
+    
+    - Binaries(bin crate) 
+        - standalone executable that may download and link other libraries into a single binary.
+        - program execution starts in the main() function present in the src/main.rs file.
+
 - *cargo new project_name*
-- *cargo.toml* serves as the config file for our crate.
+
+- *cargo.toml* 
+    - serves as the config file for our crate.
+    - also called the manifest.
+    - At minimum have the main [package] section but can have subsections
+        - specifying output targets for the package.
+            - i.e [[bin]], [[lib]], [[example]], [[test]], [[bench]] - benchmark functions compiled into separate executables.
+        - specifying the dependencies of the package.
+            - i.e [dependencies], [dev-dependencies], [build-dependencies], [target] - cross-compilation targets.
+        - specifying build profiles
+            - [dev] - optimised for compile-time speed, [release], [test], [bench].
+        - specifying the package as a workspace.
+            - unit of organization around multiple packages where they are shared dependencies, useful for disk space and compilation time. 
+    - For each of the targets, configuration can be specified
 - *--lib* flag used when creating a library.
+
+- Allows you to build different types of binaries - standalone executables, static libraries and dynamic libraries, can have the approp scaffolding created at project beginning.
+- A toolchain is a combination of a release channel and a host, and optionally also has an associated archive date.
+
+## Rust Project Structure
+
+- Workspace > Package > Crate > Module > Src file(function).
+- Crate - unit of code sharing across Rust., either a binary or library.
+- Workspace - set of packages that share a Cargo.lock file.
+- Comes with a standard library consisting of language primitives and commonly used functions, but it is small compared to other languages.
+- Thus need to rely on external libraries: *dependencies*
+- *crates.io* - is the central public package registry. used by cargo as the default package registry.
+- On running cargo build, cargo looks for the crate, downloads it and its dependencies , compiles them all and updates Cargo.lock with exact versions.
+- Each dependency takes form of <crate-name> = <semantic-version-number>.
+- Semantic Version has the format X.Y.Z = Major-version-number.Minor-version.Patch version
+- Specifying dependencies location
+    - Crates.io registry - default.
+    - Alternate registry - has to be configured in the .cargo/config file and entry made in Cargo.toml.
+    - Git repository - git address added.
+    - Specify a local path - support path-dependencies, can be sub-crate within the main cargo package. 
+    - Multiple locations - specify both registry/ Git/ path location.
+- Rust also has built-in support for writing automated tests.
+    - other functions that verify whether other non-test functions work as intended.
+    - invoke functions with specified data and assert return values are as expected.
+    - Unit and Integration tests.
+    - Idiomatic in Rust to group test functions in a test module to allow conditional compilation of test code.
+    - In integration tests, creation of tests folder in package root,with individual tests in their own files, only compiled with cargo test.
+    - Integration only available for lib crates not binary crates.
+    - Control test execution:
+        - running them by name.
+        - Ignore some tests.
+        - running them sequentially or in parallel.
+- Rust also ships with rustdoc, generate documentation.
+    - Important to think through WHAT to document and HOW to document it.
+        - WHAT: - short description of what library does.
+                - list of modules and public functions.
+                - traits, macros, structs, enums and typdefs.
+                - binary crates: installation instrutions, command-line parameters.
+                - examples on how to use the crate.
+                - design details of the crate(optional)
+        - HOW:  - inline documentation comments within the crate.use /// - item-level documentation and //! - crate-level documentation.
+                - separate markdown files.
+    - Rustdoc will generate HTML,CSS and JS viewed via the browser.
+        
 
 ## Naming conventions
 
